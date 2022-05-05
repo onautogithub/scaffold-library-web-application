@@ -246,7 +246,7 @@ export default {
       findLoading: 'loan/form/findLoading',
       saveLoading: 'loan/form/saveLoading',
       findSettingsLoading: 'settings/findLoading',
-      loanPeriodInDays: 'settings/loanPeriodInDays',
+      loadPeriodInDays: 'settings/loadPeriodInDays',
     }),
 
     formSchema() {
@@ -287,7 +287,7 @@ export default {
 
     onIssueDateChange(value) {
       this.model.dueDate = moment(value).add(
-        this.loanPeriodInDays,
+        this.loadPeriodInDays,
         'days',
       );
 

@@ -11,6 +11,9 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.STRING(255),
         allowNull: false,
       },
+      loanPeriodInDays: {
+        type: DataTypes.INTEGER
+      },
     },
     {
       timestamps: true,

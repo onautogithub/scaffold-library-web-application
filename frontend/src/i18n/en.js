@@ -36,6 +36,10 @@ const en = {
         menu: 'Loans',
         title: 'Loans',
       },
+      emailAll: {
+        label: 'Send Reminder via Email',
+        success: 'Email(s) sent successfully',
+      },
       create: {
         success: 'Loan saved successfully',
       },
@@ -53,24 +57,24 @@ const en = {
       },
       fields: {
         id: 'Id',
-        'book': 'Book',
-        'member': 'Member',
-        'issueDateRange': 'Issue Date',
-        'issueDate': 'Issue Date',
-        'dueDateRange': 'Due Date',
-        'dueDate': 'Due Date',
-        'returnDateRange': 'Return Date',
-        'returnDate': 'Return Date',
-        'status': 'Status',
+        book: 'Book',
+        member: 'Member',
+        issueDateRange: 'Issue Date',
+        issueDate: 'Issue Date',
+        dueDateRange: 'Due Date',
+        dueDate: 'Due Date',
+        returnDateRange: 'Return Date',
+        returnDate: 'Return Date',
+        status: 'Status',
         createdAt: 'Created at',
         updatedAt: 'Updated at',
         createdAtRange: 'Created at',
       },
       enumerators: {
-        'status': {
-          'inProgress': 'In Progress',
-          'overdue': 'Overdue',
-          'closed': 'Closed',
+        status: {
+          inProgress: 'In Progress',
+          overdue: 'Overdue',
+          closed: 'Closed',
         },
       },
       new: {
@@ -84,6 +88,9 @@ const en = {
         fileName: 'loan_import_template',
         hint:
           'Files/Images columns must be the URLs of the files separated by space.',
+      },
+      validation: {
+        bookOutOfStock: 'Sorry, this book is out of stock.',
       },
     },
 
@@ -113,23 +120,23 @@ const en = {
       },
       fields: {
         id: 'Id',
-        'isbn': 'ISBN',
-        'title': 'Title',
-        'author': 'Author',
-        'numberOfCopiesRange': 'Number Of Copies',
-        'numberOfCopies': 'Number Of Copies',
-        'stockRange': 'Stock',
-        'stock': 'Stock',
-        'images': 'Images',
-        'status': 'Status',
+        isbn: 'ISBN',
+        title: 'Title',
+        author: 'Author',
+        numberOfCopiesRange: 'Number Of Copies',
+        numberOfCopies: 'Number Of Copies',
+        stockRange: 'In Stock',
+        stock: 'In Stock',
+        images: 'Images',
+        status: 'Status',
         createdAt: 'Created at',
         updatedAt: 'Updated at',
         createdAtRange: 'Created at',
       },
       enumerators: {
-        'status': {
-          'available': 'Available',
-          'unavailable': 'Unavailable',
+        status: {
+          available: 'Available',
+          unavailable: 'Unavailable',
         },
       },
       new: {
@@ -163,7 +170,7 @@ const en = {
     signinWithAnotherAccount:
       'Sign in with another account',
     emailUnverified: {
-      message: `Please confirm your email at <strong>{0}</strong> to confinue.`,
+      message: `Please confirm your email at <strong>{0}</strong> to continue.`,
       submit: `Resend email verification`,
     },
     emptyPermissions: {
@@ -196,7 +203,7 @@ const en = {
     },
     member: {
       label: 'Member',
-      description: 'Member access to all resources',
+      description: 'Member access',
     },
   },
 
@@ -310,6 +317,7 @@ const en = {
     },
     fields: {
       theme: 'Theme',
+      loadPeriodInDays: 'Loan Period (In Days)',
     },
     colors: {
       default: 'Default',

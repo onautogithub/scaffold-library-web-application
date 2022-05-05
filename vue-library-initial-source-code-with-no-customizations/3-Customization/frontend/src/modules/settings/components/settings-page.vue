@@ -29,15 +29,15 @@
         v-if="model"
       >
         <el-form-item
-          :label="fields.loanPeriodInDays.label"
-          :prop="fields.loanPeriodInDays.name"
-          :required="fields.loanPeriodInDays.required"
+          :label="fields.loadPeriodInDays.label"
+          :prop="fields.loadPeriodInDays.name"
+          :required="fields.loadPeriodInDays.required"
         >
           <el-col :lg="11" :md="16" :sm="24">
             <el-input-number
               :presicion="0"
               :step="1"
-              v-model="model[fields.loanPeriodInDays.name]"
+              v-model="model[fields.loadPeriodInDays.name]"
             />
           </el-col>
         </el-form-item>
@@ -92,7 +92,7 @@ import SettingsToolbar from '@/modules/settings/components/settings-toolbar.vue'
 const { fields } = SettingsModel;
 const formSchema = new FormSchema([
   fields.theme,
-  fields.loanPeriodInDays,
+  fields.loadPeriodInDays,
 ]);
 
 export default {

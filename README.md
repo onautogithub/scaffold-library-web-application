@@ -636,9 +636,113 @@ Delete the id and createdAt fields
 
  >Let's add a field for Loan Period in Days to Settings
 
- Let's start with the backend:
+ *********************Let's start with the backend******   
  The Load Period in Days field does not exist in the database. We need to modify our model to add this field.
 
  We will use the Sequelize migrations to add a field to the model and subsequentl to the database table.
+
+ > In mySQL Workbench, select and make your database as the default schema.
+ > open a SQL command window.
+ > Enter and run the following: ALTER TABLE settings ADD COLUMN loanPeriodDays integer;
+
+ > Refresh your Workbench and examin the Settings table. The loanPeriodDays field was added to the table.
+
+ > Next - Create a migration file under backend-sql->migrations->05052022-add-loan-period.sql
+ P.S. You can change the prefix to reflect your date.
+
+ > Paste the code and save: ALTER TABLE settings ADD COLUMN loanPeriodDays integer;
+
+ Let's add the new field to our model:
+
+ > navigate and edit the file: backend-sql->src->database->models->settings.js
+
+ Add the following after the theme field
+
+      loadPeriodInDays: {
+        type: DataTypes.INTEGER
+      },
+
+*********************Let's modify the frontend****** 
+**Note:** The fields for each model in our application are declared in their own files.
+These files:
+Reside in the directory: frontend->src->modules-><tablename>
+They have the format <tablename>-model.js
+
+So the whole path is: frontend->src->modules-><tablename>-><tablename>-model.js
+
+In our case, we are modifying the settings table. Let's edit it:
+
+> Navigate to frontend->src->modules->settings->settings-module.js
+> You must import the integer-field declaration first:
+Insert the following at the top of the settings-module.js
+
+import IntegerField from '@/shared/fields/integer-field';
+
+> Next Locate and add the following to the const fields = {
+
+const fields = {
+  theme: new EnumeratorField(
+    'theme',
+    label('theme'),
+    themes,
+    { required: true },
+  ),
+  loadPeriodInDays: new IntegerField(
+    'loadPeriodInDays',
+    label('loadPeriodInDays'),
+    { required: true, min: 1 },
+  ),
+};
+*Note: min: 1 above implies loadPeriodInDays can be a min of 1 day or higher. You cannot save the settings if you indicate 0 days.
+
+Save and close the file.
+
+> Next we need to declare the label for this new field in the International en.js file
+-Navigate to the frontend->src->i18n->en.js
+
+- Locate the entity settings and add the label  -- loadPeriodInDays: 'Loan Period (In Days)' -- under fields below theme
+  settings: {
+    title: 'Settings',
+    menu: 'Settings',
+    save: {
+      success:
+        'Settings saved successfully. The page will reload in {0} seconds for changes to take effect.',
+    },
+    fields: {
+      theme: 'Theme',
+      loadPeriodInDays: 'Loan Period (In Days)'
+    },
+
+> Next, let's add / create a new form item in the Settings form.
+The path to the forms is:
+
+frontend->src->modules->components-><tablename>->
+
+> Edit: frontend->src->modules->components->settings->settings-page.vue
+> Add the new field item 
+        <el-form-item
+          :label="fields.loadPeriodInDays.label"
+          :prop="fields.loadnPeriodInDays.name"
+          :required="fields.loadPeriodInDays.required"
+        >
+        <el-input-number 
+          :precision="0" 
+          :step="1" 
+          v-model="model[fields.loadPeriodInDays.name]" >
+
+> Next (per Element-UI you can check the syntax on their website) let's add the inputnumber field inside the <el-form-item 
+with a precision 0 since it is an integer 
+and 
+step=1 to increment by 1
+and
+bind it to a fields model
+
+> Next, scroll down to scripts and add an entry in the FormSchema
+
+const { fields } = SettingsModel;
+const formSchema = new FormSchema([fields.theme, fields.loanPerPeriodInDays]);
+
+
+ **Next Members can only see their loans**
 
  
