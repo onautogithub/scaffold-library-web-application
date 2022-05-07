@@ -69,9 +69,9 @@ const fields = {
     themes,
     { required: true },
   ),
-  loadPeriodInDays: new IntegerField(
-    'loadPeriodInDays',
-    label('loadPeriodInDays'),
+  loanPeriodInDays: new IntegerField(
+    'loanPeriodInDays',
+    label('loanPeriodInDays'),
     { required: true, min: 1 },
   ),
 };

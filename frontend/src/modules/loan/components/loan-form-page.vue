@@ -19,7 +19,7 @@
         <app-i18n code="entities.loan.new.title" v-if="!isEditing"></app-i18n>
       </h1>
 
-      <div class="app-page-spinner" v-if="findLoading" v-loading="findLoading"></div>
+      <div class="app-page-spinner" v-if="findLoading || findSettingsLoading" v-loading="findLoading"></div>
 
       <el-form
         :label-position="labelPosition"
@@ -69,7 +69,7 @@
           :required="fields.issueDate.required"
         >
           <el-col :lg="11" :md="16" :sm="24">
-            <el-date-picker placeholder type="datetime" v-model="model[fields.issueDate.name]"></el-date-picker>
+            <el-date-picker placeholder type="datetime" v-model="model[fields.issueDate.name]" @change="onIssueDateChange"></el-date-picker>
           </el-col>
         </el-form-item>
 
@@ -89,7 +89,7 @@
           :required="fields.returnDate.required"
         >
           <el-col :lg="11" :md="16" :sm="24">
-            <el-date-picker placeholder type="datetime" v-model="model[fields.returnDate.name]"></el-date-picker>
+            <el-date-picker placeholder type="datetime" v-model="model[fields.returnDate.name]" @change="onReturnDateChange"></el-date-picker>
           </el-col>
         </el-form-item>
 
@@ -97,17 +97,10 @@
           :label="fields.status.label"
           :prop="fields.status.name"
           :required="fields.status.required"
-        >
+          v-if="model.status"
+          >
           <el-col :lg="11" :md="16" :sm="24">
-            <el-select placeholder v-model="model[fields.status.name]">
-              <el-option :value="undefined">--</el-option>
-              <el-option
-                :key="option.id"
-                :label="option.label"
-                :value="option.id"
-                v-for="option in fields.status.options"
-              ></el-option>
-            </el-select>
+            <app-loan-status-tag :value="model.status" />
           </el-col>
         </el-form-item>
 
@@ -136,6 +129,9 @@
 import { mapGetters, mapActions } from 'vuex';
 import { FormSchema } from '@/shared/form/form-schema';
 import { LoanModel } from '@/modules/loan/loan-model';
+import moment from 'moment'
+
+import LoanStatusTag from '@/modules/loan/components/loan-status-tag'
 
 const { fields } = LoanModel;
 const formSchema = new FormSchema([
@@ -153,6 +149,12 @@ export default {
 
   props: ['id'],
 
+    components: {
+
+    [LoanStatusTag.name]: LoanStatusTag
+  },
+
+
   data() {
     return {
       rules: formSchema.rules(),
@@ -167,6 +169,8 @@ export default {
       record: 'loan/form/record',
       findLoading: 'loan/form/findLoading',
       saveLoading: 'loan/form/saveLoading',
+      loanPeriodInDays: 'settings/loanPeriodInDays',
+      findSettingsLoading: 'settings/findLoading'
     }),
 
     isEditing() {
@@ -179,6 +183,7 @@ export default {
   },
 
   async created() {
+    await this.doFindSettings()
     if (this.isEditing) {
       await this.doFind(this.id);
     } else {
@@ -194,7 +199,31 @@ export default {
       doNew: 'loan/form/doNew',
       doUpdate: 'loan/form/doUpdate',
       doCreate: 'loan/form/doCreate',
+      doFindSettings: 'settings/doFind',
     }),
+
+    onIssueDateChange(value) {
+      this.model.dueDate = moment(value).add(
+        this.loanPeriodInDays, 'days',
+        )
+        this.fillStatus(this.model.dueDate, this.model.returnDate) 
+    },
+
+    onReturnDateChange(value) {
+      this.fillStatus(this.model.dueDate, value)
+    },
+
+    fillStatus(dueDate, returnDate) {
+      if (returnDate) {
+        this.model.status = 'closed'
+        return
+      }
+      if (moment().isAfter(moment(dueDate))) {
+        this.model.status = 'overdue'
+        return
+      }
+      this.model.status = 'inProgress'
+    },
 
     doReset() {
       this.model = formSchema.initialValues(this.record);

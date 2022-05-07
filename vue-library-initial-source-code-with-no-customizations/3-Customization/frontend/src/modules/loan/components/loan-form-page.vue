@@ -157,9 +157,7 @@ import { LoanModel } from '@/modules/loan/loan-model';
 import moment from 'moment';
 import LoanStatusTag from '@/modules/loan/components/loan-status-tag';
 import { i18n } from '@/i18n';
-
 const { fields } = LoanModel;
-
 const newFormSchema = new FormSchema([
   fields.id,
   fields.book,
@@ -168,7 +166,6 @@ const newFormSchema = new FormSchema([
   fields.dueDate,
   fields.status,
 ]);
-
 const editFormSchema = new FormSchema([
   fields.id,
   fields.book,
@@ -178,24 +175,18 @@ const editFormSchema = new FormSchema([
   fields.returnDate,
   fields.status,
 ]);
-
 export default {
   name: 'app-loan-form-page',
-
   components: {
     [LoanStatusTag.name]: LoanStatusTag,
   },
-
   props: ['id'],
-
   data() {
     let rules = null;
     const isEditing = !!this.id;
-
     if (isEditing) {
       rules = editFormSchema.rules();
     }
-
     if (!isEditing) {
       const bookStockValidator = (
         rule,
@@ -206,7 +197,6 @@ export default {
           callback();
           return;
         }
-
         if (value.stock <= 0) {
           callback(
             new Error(
@@ -217,11 +207,9 @@ export default {
           );
           return;
         }
-
         callback();
         return;
       };
-
       rules = newFormSchema.rules();
       rules = {
         ...rules,
@@ -231,13 +219,11 @@ export default {
         ],
       };
     }
-
     return {
       rules,
       model: null,
     };
   },
-
   computed: {
     ...mapGetters({
       labelPosition: 'layout/labelPosition',
@@ -246,36 +232,29 @@ export default {
       findLoading: 'loan/form/findLoading',
       saveLoading: 'loan/form/saveLoading',
       findSettingsLoading: 'settings/findLoading',
-      loadPeriodInDays: 'settings/loadPeriodInDays',
+      loanPeriodInDays: 'settings/loanPeriodInDays',
     }),
-
     formSchema() {
       return this.isEditing
         ? editFormSchema
         : newFormSchema;
     },
-
     isEditing() {
       return !!this.id;
     },
-
     fields() {
       return fields;
     },
   },
-
   async created() {
     await this.doFindSettings();
-
     if (this.isEditing) {
       await this.doFind(this.id);
     } else {
       await this.doNew();
     }
-
     this.model = this.formSchema.initialValues(this.record);
   },
-
   methods: {
     ...mapActions({
       doFind: 'loan/form/doFind',
@@ -284,54 +263,44 @@ export default {
       doCreate: 'loan/form/doCreate',
       doFindSettings: 'settings/doFind',
     }),
-
     onIssueDateChange(value) {
       this.model.dueDate = moment(value).add(
-        this.loadPeriodInDays,
+        this.loanPeriodInDays,
         'days',
       );
-
       this.fillStatus(
         this.model.dueDate,
         this.model.returnDate,
       );
     },
-
     onReturnDateChange(value) {
       this.fillStatus(this.model.dueDate, value);
     },
-
     fillStatus(dueDate, returnDate) {
       if (returnDate) {
         this.model.status = 'closed';
         return;
       }
-
       if (moment().isAfter(moment(dueDate))) {
         this.model.status = 'overdue';
         return;
       }
-
       this.model.status = 'inProgress';
     },
-
     doReset() {
       this.model = this.formSchema.initialValues(
         this.record,
       );
     },
-
     async doSubmit() {
       try {
         await this.$refs.form.validate();
       } catch (error) {
         return;
       }
-
       const { id, ...values } = this.formSchema.cast(
         this.model,
       );
-
       if (this.isEditing) {
         return this.doUpdate({
           id,

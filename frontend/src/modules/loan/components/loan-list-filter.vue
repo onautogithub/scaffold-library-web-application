@@ -21,7 +21,11 @@
       </el-col>
 
       <el-col :lg="12" :md="16" :sm="24">
-        <el-form-item :label="fields.member.label" :prop="fields.member.name">
+        <el-form-item 
+          :label="fields.member.label" 
+          :prop="fields.member.name"
+          v-if="!currentUserIsMember"
+        >
           <app-autocomplete-one-input
             :fetchFn="fields.member.fetchFn"
             v-model="model[fields.member.name]"
@@ -108,6 +112,7 @@ export default {
       labelWidthFilter: 'layout/labelWidthFilter',
       loading: 'loan/list/loading',
       filter: 'loan/list/filter',
+      currentUserIsMember: 'auth/currentUserIsMember'
     }),
 
     fields() {

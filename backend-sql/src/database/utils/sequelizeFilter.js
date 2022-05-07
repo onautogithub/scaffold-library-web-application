@@ -8,6 +8,10 @@ module.exports = class SequelizeFilterWhere {
     this.include = [];
   }
 
+  appendCustom(condition) {
+    this.whereAnd.push (condition)
+  }
+
   appendRelationWithEqual(
     relatedModel,
     relatedAs,

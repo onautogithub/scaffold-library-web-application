@@ -383,7 +383,30 @@ class LoanRepository extends AbstractRepository {
       }
 
       if (filter.status) {
-        sequelizeFilter.appendEqual('status', filter.status);
+        if (filter.status == 'closed') {
+          sequelizeFilter.appendCustom({
+            returnDate: {[models.Sequelize.Op.ne]: null}
+          })
+        }
+
+        if (filter.status == 'overdue') {
+          sequelizeFilter.appendEqual('returnDate', null)
+          sequelizeFilter.appendCustom({
+            dueDate: {
+              [models.Sequelize.Op.lt]: new Date()
+            }
+          })
+        }
+
+        if (filter.status == 'inProgress') {
+          sequelizeFilter.appendEqual('returnDate', null)
+          sequelizeFilter.appendCustom({
+            dueDate: {
+              [models.Sequelize.Op.gte]: new Date()
+            }
+          })
+        }
+
       }
 
       if (filter.createdAtRange) {

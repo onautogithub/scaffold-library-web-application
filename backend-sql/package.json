@@ -9,7 +9,7 @@
     "db:reset:production": "cross-env MIGRATION_ENV=production node ./migrations/reset"
   },
   "dependencies": {
-    "bcrypt": "3.0.6",
+    "bcrypt": "^5.0.1",
     "cors": "2.8.5",
     "express": "4.16.4",
     "formidable": "1.2.1",

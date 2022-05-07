@@ -420,20 +420,25 @@ class BookRepository extends AbstractRepository {
 
     if (query) {
       filter.appendId('id', query);
+      // filter.appendIlike('isbn', query, 'book');
+      filter.appendIlike('title', query, 'book');
+      filter.appendIlike('author', query, 'book');
       filter.appendIlike('isbn', query, 'book');
     }
 
     const records = await models.book.findAll({
-      attributes: ['id', 'isbn'],
+      attributes: ['id', 'isbn', 'title', 'author'],
       where: filter.getWhere(),
       limit: parseInt(limit) ? parseInt(limit) : undefined,
       // limit: limit || undefined,
       orderBy: [['isbn', 'ASC']],
     });
-
+    // label: `${record.title} - ${record.author} - ${
+    //   record.isbn
     return records.map((record) => ({
       id: record.id,
-      label: record.isbn,
+      //label: record.isbn,
+      label: `${record.title} - ${record.author} - ${record.isbn}`
     }));
   }
 }

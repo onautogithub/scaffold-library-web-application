@@ -21,13 +21,22 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
       },
       status: {
-        type: DataTypes.ENUM,
-        values: [
-          "inProgress",
-          "overdue",
-          "closed"
-        ],
+        type: DataTypes.VIRTUAL,
+        get: function() {
+          if (this.get('returnDate')) {
+            return 'closed';
+          }
+
+          if (
+            moment().isAfter(moment(this.get('dueDate')))
+          ) {
+            return 'overdue';
+          }
+
+          return 'inProgress';
+        },
       },
+
       importHash: {
         type: DataTypes.STRING(255),
         allowNull: true,
