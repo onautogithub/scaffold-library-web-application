@@ -29,7 +29,7 @@ const fields = {
   dueDate: new DateTimeField('dueDate', label('dueDate'), {
     "required": true
   }),
-  returnDate: new DateTimeField('returnDate', label('returnDate'), {}),
+  returnDate: new DateTimeField('returnDate', label('returnDate'), {"required": true}),
   status: new EnumeratorField('status', label('status'), [
     { id: 'inProgress', label: enumeratorLabel('status', 'inProgress') },
     { id: 'overdue', label: enumeratorLabel('status', 'overdue') },

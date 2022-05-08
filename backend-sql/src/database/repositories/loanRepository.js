@@ -86,7 +86,8 @@ class LoanRepository extends AbstractRepository {
 
     record = await record.update(
       {
-        ...lodash.pick(data, this.inTableAttributes),
+        // ...lodash.pick(data, this.inTableAttributes),
+        ...lodash.pick(data, ['returnDate']),
         updatedById: AbstractRepository.getCurrentUser(
           options,
         ).id,
@@ -98,13 +99,13 @@ class LoanRepository extends AbstractRepository {
       },
     );
 
-    await this._createOrUpdateRelations(
-      record,
-      data,
-      options,
-    );
+    // await this._createOrUpdateRelations(
+    //   record,
+    //   data,
+    //   options,
+    // );
 
-    await this._createOrUpdateFiles(record, data, options);
+    // await this._createOrUpdateFiles(record, data, options);
 
     await this._auditLogs(
       AuditLogRepository.UPDATE,

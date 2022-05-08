@@ -76,7 +76,8 @@
               </el-button>
             </router-link>
 
-            <router-link :to="`/loan/${scope.row.id}/edit`" v-if="hasPermissionToEdit">
+            <router-link :to="`/loan/${scope.row.id}/edit`" 
+              v-if="hasPermissionToEdit && scope.row.status !== 'closed'" >
               <el-button type="text">
                 <app-i18n code="common.edit"></app-i18n>
               </el-button>

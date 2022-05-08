@@ -308,6 +308,7 @@ const en = {
       createdByEmail: 'User Email',
     },
   },
+  
   settings: {
     title: 'Settings',
     menu: 'Settings',

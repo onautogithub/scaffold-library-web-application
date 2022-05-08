@@ -1,17 +1,19 @@
 Version 1.2.1.
 https://scaffoldhub.io
 
-This code can only be used for academic and learning purposes.
+From the author: This code can only be used for academic and learning purposes.
 
 **Please read my notes below before you start working on this tutorial.**
 
 Things to know:
-- The following are my notes after watching Scaffold's hours YouTube tutorial that can be found here: https://www.youtube.com/watch?v=FdC4Mjljd3k&t=216s
+- The following are my rough notes after watching Scaffold's for many hours (at least couple of weeks) YouTube tutorial. I was simply following his instructions and I did not have enough time to full grasp everything he did. That's why I decided to create these notes. His video can be found here: https://www.youtube.com/watch?v=FdC4Mjljd3k&t=216s
+
 
 My README notes outlines the pre-work setup you have to do before you start with his tutorial. It highlights the pitfalls I encountered along with their solutions. The notes documents the customizations steps from the tutorial.
 
 - I am using vue version 2.9.6 for this tutorial.
-- That tutorial calls for node 8 but I am using node 16.15.0. See my notes below on why it is the case.
+- I followed the tutorial to customize mysql only.
+- The tutorial calls for node 8 but I am using node 16.15.0. See my notes below on why it is the case.
 - The first USER you create for this tutorial becomes the admin User
 - To start the frontend, cd frontend. Enter npm start.
 - To start the backend-sql, cd backend-sql. Enter npm start.
@@ -1451,3 +1453,188 @@ One caviate, the loan status is also dependent on the Issue Date. Therefore, the
 
 (test your changes)
 
+*************************************************************************************************
+*********************Next Customization: Different forms for creating and editing Loans**
+*************************************************************************************************
+
+This part of the customization will address the following:
+I)
+- When creating a new loan, the form should only show:
+* Book
+* Member
+* Issue Date
+* Save and Rest
+The Due Date field and the Status are not visible.
+However, once we enter the issue date, the Due Date field and the Status will become visible.
+
+II)
+- When we edit the Loan, 
+* all the field are disabled with the exception of the Return Date.
+* I cannot save the form unless I enter a return date.
+
+Let's customize the forms:
+1 - Editing the loan
+a) Change the Return Date field to be required.
+b) We will validate the entry on the server side.
+c) When the form is save, we save only what changed, which, in our case is the Return Date.
+
+> Navigate to the backend-sql->src->services->loanService.js
+> locate the update method
+If the user clicked the save button without filling the returnDate, throw a validation error
+Enter the following:
+
+if (!data.returnDate) {
+  throw new ValidationError(this.language, 'entities.loan.validation.returnDateRequired')
+}
+
+> update/add to the backend-sql->src->i18n->en.js:
+
+  entities: {
+    loan: {
+      validation: {
+        returnDateRequired: 'Return Date is required'
+      }
+    }
+  },
+
+(test)
+
+- Navigate to the backend-sql->src-database->repositories->loanRepository.js
+- Locate the update method:
+We want only the returnDate to be updated versus the whole record (all the fields)
+The method below passes as a parameter this.inTableAttributes = [
+      'id',
+      'issueDate',
+      'dueDate',
+      'returnDate',
+      'status',
+      'importHash',
+      'updatedAt',
+      'createdAt',
+    ];
+
+    which has all the fields. We only want to update the returnDate. Let's modify the parameter
+
+> a) Modify the following:
+From:
+      ...lodash.pick(data, this.inTableAttributes),
+
+To:
+      ...lodash.pick(data, ['returnDate']),
+
+> b) Comment out or delete the following relations with the member and the book. We are only updating the returnDate and there is no need to update the downstream tables.
+
+    await this._createOrUpdateRelations(
+      record,
+      data,
+      options,
+    );
+
+> c) Comment out or delete the following:
+    await this._createOrUpdateFiles(record, data, options);
+
+
+    (test)
+
+- Next, let's work on the frontend
+- first let's make the returnDate a required field.
+
+> Modify the frontend->src->modules->loan-model.js:
+  returnDate: new DateTimeField('returnDate', label('returnDate'), {"required": true}),
+
+- Next, the New Loan page should not show the returnDate field since when we are checking out the book, does not make sense to enter the returnDate.
+
+- Let's edit the frontend->src->modules->components->loan-form-page.vue
+We will have to add an additional formSchema.
+The original one will be for creating a new record (loan) and the additional formSchema is when we Edit the record.
+
+> Rename the existing formSchema to newformSchema and remove/delete the returnDate from it.
+const newformSchema = new FormSchema([
+  fields.id,
+  fields.book,
+  fields.member,
+  fields.issueDate,
+  fields.dueDate,
+
+  fields.status,
+]);
+
+> add an additional formSchema with the name editformSchema
+const editformSchema = new FormSchema([
+  fields.id,
+  fields.book,
+  fields.member,
+  fields.issueDate,
+  fields.dueDate,
+  fields.returnDate,
+  fields.status,
+]);
+
+> Intialize both formSchemas in the data section. Associate each schema based on isEditing flag is true or false:
+
+  data() {
+    let rules = null;
+    const isEditing = !!this.id
+ 
+    if (isEditing) {
+      rules = editformSchema.rules()
+    }
+    if (!isEditing) {
+      rules = newformSchema.rules()
+    }
+    return {
+      rules,
+      model: null,
+    };
+  },
+
+> add formSchema() to computed so it returns the one based on whether we are adding or editing the record.
+
+> fix the reference issues (this.formSchema)
+
+- Next, let's show the field returnDate on the form only when we are editing the record.
+> Let's add the v-if="isEditing" statement
+
+        <el-form-item
+          :label="fields.returnDate.label"
+          :prop="fields.returnDate.name"
+          :required="fields.returnDate.required"
+          v-if="isEditing"
+        >
+          <el-col :lg="11" :md="16" :sm="24">
+            <el-date-picker placeholder type="datetime" v-model="model[fields.returnDate.name]" @change="onReturnDateChange"></el-date-picker>
+          </el-col>
+        </el-form-item>
+
+- Next, we will do the same for the dueDate. The dueDate will show once we enter the issueDate.
+Once entered, the dueDate is automatically calculated and the dueDate field has data in it. At this point, the vi-if statement is valid and the dueDate field will be visible.
+
+> Let's add the  v-if="model.dueDate" statement
+
+          <el-form-item
+          :label="fields.dueDate.label"
+          :prop="fields.dueDate.name"
+          :required="fields.dueDate.required"
+          v-if="model.dueDate"
+        >
+          <el-col :lg="11" :md="16" :sm="24">
+            <el-date-picker placeholder type="datetime" v-model="model[fields.dueDate.name]"></el-date-picker>
+          </el-col>
+        </el-form-item> 
+
+        (test it)
+
+- So far we made the modifications on the backend, where we added the logic when editing the loan record, to prevent any data from being saved, except the returnDate.
+The modifications we've done on the frontend so far manipulated the visibilitiy of the dueDate and returnDate based on the isEditing flag. However, we did not disable the rest of the fields to prevent the user from editing them. (even if they edit them, their changes won't be saved with the exception of the returnDate.)
+
+- Let's disable the rest of the fields on the form:
+add :disabled="isEditing" to the rest of the field.
+Note: the disable funcitonalily on the element-ui date picker does not work.  
+
+- The last part - If the book was previously returned, meaning the status is 'closed', there is no need to allow the user to edit/change the record.
+
+- Let's disable/hide/remove the edit button/link from showing in the list table when the status is closed.
+
+> navigate to load-form-list-table.vue and add another condition scope.row.status !== 'closed'
+
+  v-if="hasPermissionToEdit  && scope.row.status !== 'closed'" >

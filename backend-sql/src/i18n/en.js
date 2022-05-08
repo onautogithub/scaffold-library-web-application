@@ -3,6 +3,14 @@ const en = {
     title: 'Library',
   },
 
+  entities: {
+    loan: {
+      validation: {
+        returnDateRequired: 'Return Date is required'
+      }
+    }
+  },
+
   auth: {
     userDisabled: 'Your account is disabled',
     userNotFound: `Sorry, we don't recognize your credentials`,
