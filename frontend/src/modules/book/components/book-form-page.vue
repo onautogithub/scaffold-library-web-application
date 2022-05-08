@@ -102,24 +102,6 @@
           </el-col>
         </el-form-item>
 
-        <el-form-item
-          :label="fields.status.label"
-          :prop="fields.status.name"
-          :required="fields.status.required"
-        >
-          <el-col :lg="11" :md="16" :sm="24">
-            <el-select placeholder v-model="model[fields.status.name]">
-              <el-option :value="undefined">--</el-option>
-              <el-option
-                :key="option.id"
-                :label="option.label"
-                :value="option.id"
-                v-for="option in fields.status.options"
-              ></el-option>
-            </el-select>
-          </el-col>
-        </el-form-item>
-
         <el-form-item>
           <div class="form-buttons">
             <el-button
@@ -155,7 +137,7 @@ const formSchema = new FormSchema([
   fields.numberOfCopies,
   fields.stock,
   fields.images,
-  fields.status,
+  
 ]);
 
 export default {

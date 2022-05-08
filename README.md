@@ -1321,6 +1321,8 @@ if (filter.status) {
 
       }
 
+The logic above is based on the value of Status. If Status is closed, filter on loans with a return date not null. If Status is overdue, filter on loans with a dueDate < current date. If Status is inProgress, filter on loans with a dueDate >= current date.   
+
 - Next we will be using Tags from Element-UI for the Status.
 
 > Add a component called load-status-tag.vue. We will leverage the element-ui tags.
@@ -1515,7 +1517,20 @@ The method below passes as a parameter this.inTableAttributes = [
 
     which has all the fields. We only want to update the returnDate. Let's modify the parameter
 
-> a) Modify the following:
+> a1) Delete status from the this.inTableAttributes = [
+      'id',
+      'issueDate',
+      'dueDate',
+      'returnDate',
+
+      'importHash',
+      'updatedAt',
+      'createdAt',
+    ];
+
+P.S. The author forgot this step during the Loan customization. He realized it during the book customization (at the video marker 3:21)
+
+> a2) Modify the following:
 From:
       ...lodash.pick(data, this.inTableAttributes),
 
@@ -1638,3 +1653,199 @@ Note: the disable funcitonalily on the element-ui date picker does not work.
 > navigate to load-form-list-table.vue and add another condition scope.row.status !== 'closed'
 
   v-if="hasPermissionToEdit  && scope.row.status !== 'closed'" >
+
+(test your changes)
+
+*************************************************************************************************
+*********************Next Customization: Book Status**
+*************************************************************************************************
+
+- Let's modify the book statuses - Unavailable, Available.
+While on the book page, I should be a able to search for books that are availabe (in stock) and the ones that are unavailable (stock <=0) from the Status dropdown menu.
+if the stock (number of available books) is > 0 => Status will be Available. It will be Unavailable otherwise.
+
+- As usual, we start with the backend
+The Book Status is defined in the book.js file
+      status: {
+        type: DataTypes.ENUM,
+        values: [
+          "available",
+          "unavailable"
+        ],
+      },
+Like before, let's make use of the VIRTUAL field for the DataTypes
+From type: DataTypes.ENUM to type: DataTypes.VIRTUAL
+Instead of hardcoding the Statuses, let's check the current stock on the shelves
+      status: {
+        type: DataTypes.VIRTUAL,
+        get: function() {
+          if (this.get('stock') > 0) {
+            return 'available'
+          }
+          return 'unavailable'
+       }
+      },
+
+(test your change - Logout and log back in)
+
+- Let's fix the dropdown menu to allow us to search for available and unavailable books. We will implement a similar logic we implemented for the Loan statuses (closed, overdue and inProgress).
+
+> Working on the backend, navigate to backend-sql->src->database->repositories->bookRepository.js
+> Delete Status from the inTableAttributes
+ this.inTableAttributes = [
+      'id',
+      'isbn',
+      'title',
+      'author',
+      'numberOfCopies',
+      'stock',
+
+      'importHash',
+      'updatedAt',
+      'createdAt',
+    ];
+
+> Navigate to the following and implement the following logic:
+
+      if (filter.status === 'available') {
+        sequelizeFilter.appendCustom({
+          stock: { [models.Sequelize.Op.gt]: 0}
+        });
+      }
+      if (filter.status === 'unavailable') {
+        sequelizeFilter.appendCustom({
+          stock: { [models.Sequelize.Op.lte]: 0}
+        });
+      }
+If the Status is available, it implies we have books available in the libraty to be loaned. Therefore, the stock (quantity) should be greater than 0. So. let's filter on the books that have stocks > 0
+Otherwise, if the Status is unavailable, it implies the stock (quatity) <= 0. So let's filter on these books that have 0 quatity.
+
+The logic above is similar to the logic we implemented for the Loans
+if (filter.status) {
+        if (filter.status == 'closed') {
+          sequelizeFilter.appendCustom({
+            returnDate: {[models.Sequelize.Op.ne]: null}
+          })
+        }
+
+        if (filter.status == 'overdue') {
+          sequelizeFilter.appendEqual('returnDate', null)
+          sequelizeFilter.appendCustom({
+            dueDate: {
+              [models.Sequelize.Op.lt]: new Date()
+            }
+          })
+        }
+
+        if (filter.status == 'inProgress') {
+          sequelizeFilter.appendEqual('returnDate', null)
+          sequelizeFilter.appendCustom({
+            dueDate: {
+              [models.Sequelize.Op.gte]: new Date()
+            }
+          })
+        }
+
+      }
+
+(test your change - From the Status dropdown menu, select Available and click Search, you should only get the list of available books. Select unavailable from the dropdown menu and search, you should get the unavailable books. )
+
+- Now, let's implement the tags (colors) like we did for Loans. It is very similar to the loan-status-tag.vue
+> Working with the frontend, duplicate the frontend->src->modules->loan->components->loan-status-tag.vue and rename it to book-status-tag.vue. Move the file to frontend->src->modules->book->components
+
+> make the modifications:
+<div>
+<el-tag type="success" v-if="value==='available'">{{this.label}}</el-tag>
+<el-tag type="danger" v-if="value==='unavailable'">{{this.label}}</el-tag>
+</div>
+
+> Go through the file and replace all loan expressions with book
+
+- Next let's modify the book-list-table to reflect the tag coloring scheme
+> Edit frontend->src->modules->book->components->book-list-table.vue
+- Insert the import statement: 
+import BookStatusTag from '@/modules/book/components/book-status-tag'
+
+- Define the component:
+  components: {
+    [BookStatusTag.name]: BookStatusTag
+  },
+
+  - Replace from:
+        <template slot-scope="scope">
+        {{ presenter(scope.row, 'status') }}
+      </template>
+
+    to:
+          <el-table-column
+        :label="fields.status.label"
+        :prop="fields.status.name"
+        sortable="custom"
+      >
+      <template slot-scope="scope">
+        <app-book-status-tag
+          :value="scope.row.status"
+          /> 
+      </template>
+      </el-table-column>
+
+-Next, let's make the changes to the book-view-page.vue
+> Edit the frontend->src->modules->book->components->book-view-page.vue 
+
+- import the tag component:
+import BookStatusTag from '@/modules/book/components/book-status-tag'
+
+- Add/declare the component:
+  components: {
+    [BookViewToolbar.name]: BookViewToolbar,
+    [BookStatusTag.name]: BookStatusTag
+  },
+
+- Modifiy:
+
+Form: 
+  <app-view-item-text :label="fields.status.label" :value="presenter(record, 'status')"></app-view-item-text>
+
+To:
+        <app-view-item-custom :label="fields.status.label" :value="record.status">
+          <app-book-status-tag
+          :value="record.status"
+          /> 
+        </app-view-item-custom> 
+
+- Next, let's fix the Status on the New book form. When adding a new book, we should not have status combo box on the form. We will add the quatity (stock) of the book in the Settings and book status (available or unavailable) will automatically be updated (based on all the work we did above)
+> Edit the frontend->src->modules->book->components->book-form-page.vue 
+> Locate and delete:
+
+        <el-form-item
+          :label="fields.status.label"
+          :prop="fields.status.name"
+          :required="fields.status.required"
+        >
+          <el-col :lg="11" :md="16" :sm="24">
+            <el-select placeholder v-model="model[fields.status.name]">
+              <el-option :value="undefined">--</el-option>
+              <el-option
+                :key="option.id"
+                :label="option.label"
+                :value="option.id"
+                v-for="option in fields.status.options"
+              ></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+
+> Locate and delete  fields.status from the formSchema
+
+const formSchema = new FormSchema([
+  fields.id,
+  fields.isbn,
+  fields.title,
+  fields.author,
+  fields.numberOfCopies,
+  fields.stock,
+  fields.images,
+ 
+]);
+  
+(test it, add a book, the status combobox field does not show on the form)

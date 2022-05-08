@@ -15,7 +15,7 @@ class LoanRepository extends AbstractRepository {
       'issueDate',
       'dueDate',
       'returnDate',
-      'status',
+
       'importHash',
       'updatedAt',
       'createdAt',

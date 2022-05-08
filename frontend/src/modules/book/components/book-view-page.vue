@@ -42,8 +42,11 @@
 
         <app-view-item-image :label="fields.images.label" :value="presenter(record, 'images')"></app-view-item-image>
 
-        <app-view-item-text :label="fields.status.label" :value="presenter(record, 'status')"></app-view-item-text>
-
+        <app-view-item-custom :label="fields.status.label" :value="record.status">
+          <app-book-status-tag
+          :value="record.status"
+          /> 
+        </app-view-item-custom> 
         <app-view-item-text :label="fields.createdAt.label" :value="presenter(record, 'createdAt')"></app-view-item-text>
 
         <app-view-item-text :label="fields.updatedAt.label" :value="presenter(record, 'updatedAt')"></app-view-item-text>
@@ -57,6 +60,8 @@ import { mapGetters, mapActions } from 'vuex';
 import BookViewToolbar from '@/modules/book/components/book-view-toolbar.vue';
 import { BookModel } from '@/modules/book/book-model';
 
+import BookStatusTag from '@/modules/book/components/book-status-tag'
+
 const { fields } = BookModel;
 
 export default {
@@ -66,6 +71,7 @@ export default {
 
   components: {
     [BookViewToolbar.name]: BookViewToolbar,
+    [BookStatusTag.name]: BookStatusTag
   },
 
   computed: {

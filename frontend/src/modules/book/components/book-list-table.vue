@@ -48,7 +48,11 @@
         :prop="fields.status.name"
         sortable="custom"
       >
-        <template slot-scope="scope">{{ presenter(scope.row, 'status') }}</template>
+      <template slot-scope="scope">
+        <app-book-status-tag
+          :value="scope.row.status"
+          /> 
+      </template>
       </el-table-column>
 
       <el-table-column :fixed="isMobile? undefined : 'right'" align="center" width="180">
@@ -98,10 +102,16 @@ import { mapGetters, mapActions } from 'vuex';
 import { BookPermissions } from '@/modules/book/book-permissions';
 import { i18n } from '@/i18n';
 
+import BookStatusTag from '@/modules/book/components/book-status-tag'
+
 const { fields } = BookModel;
 
 export default {
   name: 'app-book-list-table',
+
+  components: {
+    [BookStatusTag.name]: BookStatusTag
+  },
 
   mounted() {
     this.doMountTable(this.$refs.table);

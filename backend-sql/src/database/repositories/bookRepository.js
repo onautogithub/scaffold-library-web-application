@@ -17,7 +17,7 @@ class BookRepository extends AbstractRepository {
       'author',
       'numberOfCopies',
       'stock',
-      'status',
+
       'importHash',
       'updatedAt',
       'createdAt',
@@ -360,8 +360,15 @@ class BookRepository extends AbstractRepository {
         sequelizeFilter.appendIlike('author', filter.author, 'book');
       }
 
-      if (filter.status) {
-        sequelizeFilter.appendEqual('status', filter.status);
+      if (filter.status === 'available') {
+        sequelizeFilter.appendCustom({
+          stock: { [models.Sequelize.Op.gt]: 0}
+        });
+      }
+      if (filter.status === 'unavailable') {
+        sequelizeFilter.appendCustom({
+          stock: { [models.Sequelize.Op.lte]: 0}
+        });
       }
 
       if (filter.createdAtRange) {

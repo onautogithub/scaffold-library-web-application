@@ -42,11 +42,13 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.INTEGER,
       },
       status: {
-        type: DataTypes.ENUM,
-        values: [
-          "available",
-          "unavailable"
-        ],
+        type: DataTypes.VIRTUAL,
+        get: function() {
+          if (this.get('stock') > 0) {
+            return 'available'
+          }
+          return 'unavailable'
+       }
       },
       importHash: {
         type: DataTypes.STRING(255),
